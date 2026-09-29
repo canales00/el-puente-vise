@@ -63,6 +63,14 @@ canvas{display:block;width:100%;height:100%;image-rendering:pixelated;image-rend
 .gitems span{display:block;color:#c9c2ae}
 .gwarn{list-style:none;padding:0!important;margin-top:10px!important}
 .gwarn li{margin-bottom:10px}
+.pauseBtn{position:absolute;left:8px;bottom:8px;z-index:4;width:30px;height:30px;display:grid;place-items:center;padding:0;border:2px solid #fff7e0;background:rgba(26,20,8,.7);color:#fff7e0;cursor:pointer}
+.pauseBtn[hidden]{display:none}
+.pauseBtn:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.pmenu{display:flex;flex-direction:column;gap:14px;min-width:min(260px,70%)}
+.btn.danger{background:#e2552b;color:#fff7e0;box-shadow:0 4px 0 #8a2e12,4px 6px 0 #000}
+.go{margin:0;font-size:clamp(20px,6vw,56px)!important;line-height:1.1!important;color:#e2552b!important;text-shadow:4px 4px 0 #5a1a0a,6px 6px 0 #000;letter-spacing:3px;animation:goblink 1.2s steps(2,end) infinite}
+@keyframes goblink{50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.go{animation:none}}
 .fsBtn{position:absolute;right:8px;bottom:8px;z-index:4;width:30px;height:30px;display:grid;place-items:center;padding:0;border:2px solid #fff7e0;background:rgba(26,20,8,.7);color:#fff7e0;cursor:pointer}
 .fsBtn:focus-visible{outline:3px solid #fff;outline-offset:2px}
 .stage:fullscreen{border:0;box-shadow:none;width:100vw;height:100vh;aspect-ratio:auto;background:#000;display:flex;align-items:center;justify-content:center}
@@ -146,6 +154,7 @@ kbd{font-family:inherit;background:var(--chip);border:2px solid var(--muted);pad
 
     <div class="overlay" id="endScreen" hidden>
       <div class="brand"><img class="sh" alt="" src="data:image/png;base64,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"></div>
+      <p class="go" id="endGo" hidden>GAME OVER</p>
       <h2 id="endTitle">¡Puente terminado!</h2>
       <div class="stars" id="endStars"></div>
       <p id="endScore"></p>
@@ -157,7 +166,8 @@ kbd{font-family:inherit;background:var(--chip);border:2px solid var(--muted);pad
       <p class="sub" id="saveMsg" hidden></p>
       <div class="row">
         <button class="btn" id="nextBtn" hidden>Siguiente obra: Autopista</button>
-        <button class="btn" id="againBtn">Otra obra</button>
+        <button class="btn" id="againBtn">Jugar de nuevo</button>
+        <button class="btn alt" id="menuBtn" hidden>Menú principal</button>
         <button class="btn alt" id="driveBtn">Cruzar el puente</button>
       </div>
     </div>
@@ -213,6 +223,19 @@ kbd{font-family:inherit;background:var(--chip);border:2px solid var(--muted);pad
       </div>
     </div>
 
+    <div class="overlay" id="pauseScreen" hidden>
+      <h2>Pausa</h2>
+      <p class="sub" id="pauseInfo"></p>
+      <div class="pmenu">
+        <button class="btn" id="resumeBtn">Continuar</button>
+        <button class="btn alt" id="pHowBtn">Cómo jugar</button>
+        <button class="btn alt" id="pSoundBtn">Sonido: sí</button>
+        <button class="btn danger" id="quitBtn">Volver al inicio</button>
+      </div>
+      <p class="keys">Presiona <kbd>P</kbd> o <kbd>Esc</kbd> para continuar</p>
+    </div>
+
+    <button class="pauseBtn" id="pauseBtn" aria-label="Pausa" title="Pausa (P)" hidden><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><rect x="3" y="2" width="3.5" height="12" fill="currentColor"/><rect x="9.5" y="2" width="3.5" height="12" fill="currentColor"/></svg></button>
     <button class="fsBtn" id="fsBtn" aria-label="Pantalla completa" aria-pressed="false" title="Pantalla completa (F)"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M1 6V1h5M10 1h5v5M15 10v5h-5M6 15H1v-5" fill="none" stroke="currentColor" stroke-width="2"/></svg></button>
   </div></div>
 
@@ -421,6 +444,7 @@ addEventListener('keydown',e=>{
   else if((e.key===' '||e.key==='ArrowDown'||e.key==='s'||e.key==='S')&&running){e.preventDefault();if(!e.repeat)action();}
   else if(e.key==='m'||e.key==='M')setMute(!muted);
   else if(e.key==='f'||e.key==='F')toggleFS();
+  else if(e.key==='p'||e.key==='P'||e.key==='Escape'){if(paused)resumeGame();else pauseGame();}
 });
 addEventListener('blur',()=>{keys.left=keys.right=keys.boost=false;});
 addEventListener('keyup',e=>{
@@ -444,16 +468,40 @@ document.getElementById('againBtn').onclick=()=>{reset();endScreen.hidden=true;$
 if(PRACTICE){document.getElementById('pBanner').hidden=false;document.getElementById('startBtn').textContent='Nivel 1: Puente';
   const b2=document.getElementById('startL2');b2.hidden=false;b2.onclick=()=>{initAudio();reset();startScreen.hidden=true;startLevel2();};}
 document.getElementById('nextBtn').onclick=()=>startLevel2();
+// ---- Pausa y menú ----
+let paused=false,guideFrom='start',quitArmed=false;
+const pauseScreen=document.getElementById('pauseScreen'),pauseBtn=document.getElementById('pauseBtn');
+function canPause(){return running&&!over&&!won&&!paused&&endScreen.hidden&&startScreen.hidden&&guide.hidden;}
+function pauseGame(){
+  if(!canPause())return;paused=true;keys.left=keys.right=keys.boost=false;
+  if(AC&&engGain)engGain.gain.setTargetAtTime(0,AC.currentTime,0.05);
+  const info=level===2?'Nivel 2 · Autopista '+Math.min(L2.segs+1,SEGS2)+'/'+SEGS2:'Nivel 1 · Puente '+Math.min(spans+1,SPANS)+'/'+SPANS;
+  $('pauseInfo').textContent=info+' · '+fmt(timeLeft)+' restantes · '+score+' pts';
+  $('pSoundBtn').textContent='Sonido: '+(muted?'no':'sí');quitArmed=false;$('quitBtn').textContent='Volver al inicio';
+  pauseScreen.hidden=false;$('resumeBtn').focus();
+}
+function resumeGame(){if(!paused)return;paused=false;pauseScreen.hidden=true;guide.hidden=true;prev=performance.now();musicNext=0;if(document.activeElement)document.activeElement.blur();}
+function toMenu(){
+  paused=false;pauseScreen.hidden=true;guide.hidden=true;endScreen.hidden=true;running=false;reset();
+  keys.left=keys.right=keys.boost=false;startScreen.hidden=false;$('startBtn').focus();fetchScores();
+}
+pauseBtn.onclick=e=>{pauseGame();};
+document.getElementById('resumeBtn').onclick=resumeGame;
+document.getElementById('pSoundBtn').onclick=()=>{setMute(!muted);$('pSoundBtn').textContent='Sonido: '+(muted?'no':'sí');};
+document.getElementById('pHowBtn').onclick=()=>{guideFrom='pause';pauseScreen.hidden=true;guide.hidden=false;gShow(0);};
+document.getElementById('quitBtn').onclick=()=>{if(!quitArmed){quitArmed=true;$('quitBtn').textContent='¿Seguro? Se pierde la partida';return;}toMenu();};
+document.getElementById('menuBtn').onclick=toMenu;
+document.addEventListener('visibilitychange',()=>{if(document.hidden)pauseGame();});
 driveBtn.onclick=()=>{endScreen.hidden=true;running=true;if(document.activeElement)document.activeElement.blur();};
 // ---- Guía "Cómo jugar" ----
 const guide=document.getElementById('guide'),gPages=[...guide.querySelectorAll('.gpage')];let gIdx=0;
 function gShow(i){gIdx=i;gPages.forEach((pg,j)=>pg.hidden=j!==i);document.getElementById('gCount').textContent=(i+1)+' / '+gPages.length+' · '+gPages[i].dataset.title;
-  const last=i===gPages.length-1;document.getElementById('gNext').hidden=last;document.getElementById('gPlay').hidden=!last;
+  const last=i===gPages.length-1;document.getElementById('gPlay').textContent=guideFrom==='pause'?'Continuar':'¡A jugar!';document.getElementById('gNext').hidden=last;document.getElementById('gPlay').hidden=!last;
   document.getElementById('gPrev').textContent=i===0?'Volver':'Anterior';(last?document.getElementById('gPlay'):document.getElementById('gNext')).focus();}
-document.getElementById('howBtn').onclick=()=>{startScreen.hidden=true;guide.hidden=false;gShow(0);try{localStorage.setItem('vise-puente-guia','1');}catch(e){}};
+document.getElementById('howBtn').onclick=()=>{guideFrom='start';startScreen.hidden=true;guide.hidden=false;gShow(0);try{localStorage.setItem('vise-puente-guia','1');}catch(e){}};
 document.getElementById('gNext').onclick=()=>gShow(Math.min(gPages.length-1,gIdx+1));
-document.getElementById('gPrev').onclick=()=>{if(gIdx===0){guide.hidden=true;startScreen.hidden=false;document.getElementById('howBtn').focus();}else gShow(gIdx-1);};
-document.getElementById('gPlay').onclick=()=>{guide.hidden=true;if(PRACTICE){startScreen.hidden=false;document.getElementById('startBtn').focus();}else{startScreen.hidden=true;go();}};
+document.getElementById('gPrev').onclick=()=>{if(gIdx===0){guide.hidden=true;if(guideFrom==='pause'){pauseScreen.hidden=false;document.getElementById('resumeBtn').focus();}else{startScreen.hidden=false;document.getElementById('howBtn').focus();}}else gShow(gIdx-1);};
+document.getElementById('gPlay').onclick=()=>{guide.hidden=true;if(guideFrom==='pause'){resumeGame();return;}if(PRACTICE){startScreen.hidden=false;document.getElementById('startBtn').focus();}else{startScreen.hidden=true;go();}};
 {const ul=document.getElementById('gItems');for(const k in ITEMS){const li=document.createElement('li');const c=document.createElement('canvas');c.width=12;c.height=12;
   drawIcon(c.getContext('2d'),k,0,0);li.appendChild(c);const d=document.createElement('div');d.innerHTML='<b>'+ITEMS[k].name+'</b><span>'+ITEMS[k].desc+'</span>';li.appendChild(d);ul.appendChild(li);}}
 let seenGuide=false;try{seenGuide=!!localStorage.getItem('vise-puente-guia');}catch(e){}
@@ -494,8 +542,8 @@ function pollPad(){
   const b=i=>!!(gp.buttons[i]&&gp.buttons[i].pressed),ax=gp.axes[0]||0;
   pad.left=b(14)||ax<-0.35;pad.right=b(15)||ax>0.35;pad.boost=b(1)||b(5)||b(7);
   const A=b(0)||b(2),St=b(9);
-  if(A&&!padPrev.A){if(running)action();else padConfirm();}
-  if(St&&!padPrev.St)padConfirm();
+  if(A&&!padPrev.A){if(paused){if(!guide.hidden)padConfirm();else if(document.activeElement&&document.activeElement.click)document.activeElement.click();else resumeGame();}else if(running)action();else padConfirm();}
+  if(St&&!padPrev.St){if(paused)resumeGame();else if(canPause())pauseGame();else padConfirm();}
   padPrev.A=A;padPrev.St=St;
 }
 function padConfirm(){
@@ -507,10 +555,10 @@ function padConfirm(){
 function rumble(ms,mag){try{const gp=padIdx!==null&&navigator.getGamepads()[padIdx];const va=gp&&gp.vibrationActuator;
   if(va&&va.playEffect)va.playEffect('dual-rumble',{duration:ms,strongMagnitude:mag,weakMagnitude:mag}).catch(()=>{});}catch(e){}}
 // El mando también se lee cuando el juego no está corriendo (pantallas de inicio y final)
-setInterval(()=>{if(!running)pollPad();},50);
+setInterval(()=>{if(!running||paused)pollPad();},50);
 
 function action(){
-  if(!running||m.act||m.stun>0)return;
+  if(!running||paused||m.act||m.stun>0)return;
   if(level===2)return action2();
   if(m.bucket==='empty'){
     const r=nearRubble();
@@ -546,12 +594,12 @@ function endGame(ok){
   if(ok)setTimeout(()=>{sfx.win();for(let i=0;i<90;i++)particles.push({x:cam+Math.random()*W,y:-Math.random()*40,vx:(Math.random()-.5)*30,vy:20+Math.random()*30,g:40,life:4,c:['#f2b705','#9fd8ef','#ffffff','#e2552b',NAVY][i%5],s:2});},300);
   else sfx.lose();
   setTimeout(()=>{running=false;
-    $('nextBtn').hidden=true;$('againBtn').hidden=false;
-    document.getElementById('endTitle').textContent=ok?'¡Obra terminada!':'Se acabó la jornada';
+    $('nextBtn').hidden=true;$('againBtn').hidden=false;$('menuBtn').hidden=false;$('endGo').hidden=false;
+    document.getElementById('endTitle').textContent=ok?'¡Completaste las dos obras!':'Se acabó la jornada';
     document.getElementById('endStars').textContent=ok?('★'.repeat(stars(score))+'☆'.repeat(3-stars(score))):'';
     document.getElementById('endScore').textContent=ok?(score+' puntos · bono de tiempo +'+bonus+' · bono de diésel +'+fbonus):(score+' puntos · '+(level===2?'puente listo y '+L2.segs+' de '+SEGS2+' tramos de autopista':spans+' de '+SPANS+' tramos del puente'));
-    document.getElementById('endBest').textContent=ok?(rec?'¡Nuevo récord de obra!':'Récord '+bestScore+' puntos'):(level===2?'Tiende la mezcla caliente y usa la Lona térmica':'Recoge cajas de Hora extra y encadena combos');
-    driveBtn.hidden=!ok;driveBtn.textContent='Recorrer la autopista';endScreen.hidden=false;offerSave(score,progress());},ok?1600:900);
+    document.getElementById('endBest').textContent=ok?((rec?'¡Nuevo récord de obra! ':'Récord '+bestScore+' puntos. ')+'Gracias por jugar: pronto habrá más obras.'):(level===2?'Tiende la mezcla caliente y usa la Lona térmica':'Recoge cajas de Hora extra y encadena combos');
+    driveBtn.hidden=true;endScreen.hidden=false;offerSave(score,progress());},ok?1600:900);
 }
 function win(){levelDone();}
 function levelDone(){
@@ -561,7 +609,7 @@ function levelDone(){
     $('endTitle').textContent='¡Puente terminado!';$('endStars').textContent='';
     $('endScore').textContent=score+' puntos · bono de tiempo +'+bonus+' · bono de diésel +'+fbonus;
     $('endBest').innerHTML='<b>Nivel 2 · Autopista</b><br>1. Voltea hacia el camión y presiona acción para cargar mezcla.<br>2. Avanza a la derecha: la carpeta se tiende sola.<br>3. Tiéndela caliente: mira el termómetro sobre la máquina.<br>4. Respeta al banderero: si cruzas en ALTO pierdes 6 segundos.<br>5. Tras 3 cargas el camión va a la planta. A veces se retrasa o trae mezcla tibia.';
-    $('saveForm').hidden=true;$('saveMsg').hidden=true;$('againBtn').hidden=true;driveBtn.hidden=true;$('nextBtn').hidden=false;
+    $('saveForm').hidden=true;$('saveMsg').hidden=true;$('againBtn').hidden=true;$('menuBtn').hidden=true;$('endGo').hidden=true;driveBtn.hidden=true;$('nextBtn').hidden=false;
     endScreen.hidden=false;$('nextBtn').focus();},1700);
 }
 function startLevel2(){
@@ -1106,6 +1154,7 @@ const hT=$('hTramo'),hD=$('hDots'),hS=$('hScore'),hC=$('hCombo'),hTi=$('hTime'),
 let last={};
 function set(el,key,val){if(last[key]!==val){last[key]=val;el.textContent=val;}}
 function hud(){
+  const showP=running&&!over&&!paused&&startScreen.hidden&&guide.hidden;if(pauseBtn.hidden===showP)pauseBtn.hidden=!showP;
   if(level===2){set(hT,'t',won?'Autopista lista':'Autopista '+Math.min(L2.segs+1,SEGS2)+'/'+SEGS2);
     set(hD,'d',L2.hopper>0?'Tolva '+Math.round(L2.hopper)+'% · '+mixC()+'°C':'Tolva vacía');hD.style.color=L2.hopper>0?(L2.temp>=60?'#7fd35a':L2.temp>=30?'#ffd84a':'#9fd8ef'):'';
     const T=L2.truck;set(hC,'c',T.phase==='parked'?'Camión: '+T.loads+(T.loads===1?' carga':' cargas')+(T.mixTemp<100?' · tibia':''):T.phase==='away'?(T.event==='retraso'?'Camión con retraso ':'Camión en planta ')+Math.ceil(T.t)+'s':'Camión en camino');}
@@ -1135,7 +1184,7 @@ function hud(){
 }
 
 let prev=performance.now();
-function loop(now){const dt=Math.min(0.05,(now-prev)/1000);prev=now;update(dt);draw();hud();requestAnimationFrame(loop);}
+function loop(now){const dt=Math.min(0.05,(now-prev)/1000);prev=now;if(!paused)update(dt);draw();hud();requestAnimationFrame(loop);}
 requestAnimationFrame(loop);
 
 // ================= Tabla de récords y torneo =================
