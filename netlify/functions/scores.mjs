@@ -9,7 +9,7 @@
 //   DELETE /api/scores {list:'general'|'torneo', ts} | {list, all:true}
 import { getStore } from "@netlify/blobs";
 
-const RULES = "puente-2026-10e"; // debe coincidir con RULES en public/index.html
+const RULES = "puente-2026-10g"; // debe coincidir con RULES en public/index.html
 const KEEP = 50;
 const KEEP_TORNEO = 500;
 const SHOW = 10;
