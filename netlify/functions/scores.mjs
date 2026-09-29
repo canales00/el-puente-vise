@@ -9,12 +9,12 @@
 //   DELETE /api/scores {list:'general'|'torneo', ts} | {list, all:true}
 import { getStore } from "@netlify/blobs";
 
-const RULES = "puente-2026-10g"; // debe coincidir con RULES en public/index.html
+const RULES = "puente-2026-10i"; // debe coincidir con RULES en public/index.html
 const KEEP = 50;
 const KEEP_TORNEO = 500;
 const SHOW = 10;
 const MAX_SCORE = 40000;
-const MAX_PROG = 14; // 6 tramos de puente + 8 de autopista
+const MAX_PROG = 10; // 4 tramos de puente + 6 de autopista
 
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), {
