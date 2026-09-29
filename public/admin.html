@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Administrar récords — El Puente</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#141414;--ink:#f1ead8;--muted:#a79f8c;--line:#3a3a3a;--accent:#f2b705;--danger:#e2552b;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:'Press Start 2P',ui-monospace,Menlo,Consolas,monospace;font-size:10px;line-height:1.9}
+main{max-width:760px;margin:0 auto;padding:24px 16px}
+h1{font-size:16px;color:var(--accent);margin:0 0 6px}
+p{color:var(--muted);margin:0 0 18px}
+.login{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+input{font-family:inherit;font-size:11px;padding:10px;background:#000;color:var(--ink);border:3px solid var(--accent);min-width:220px;flex:1}
+button{font-family:inherit;font-size:10px;padding:10px 14px;border:0;cursor:pointer;background:var(--accent);color:#1a1408;box-shadow:0 4px 0 #8a5e00}
+button:active{transform:translateY(3px);box-shadow:0 1px 0 #8a5e00}
+button.del{background:var(--danger);color:#fff;box-shadow:0 4px 0 #8a2e12;padding:8px 10px}
+button.ghost{background:transparent;color:var(--ink);border:2px solid var(--ink);box-shadow:none}
+button:disabled{opacity:.5;cursor:default}
+button:focus-visible,input:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.status{min-height:1.9em;color:var(--accent)}
+.status.err{color:var(--danger)}
+.wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:10px 8px;border-bottom:2px dotted var(--line);white-space:nowrap}
+th{color:var(--muted);font-weight:normal}
+td.num{text-align:right}
+.empty{color:var(--muted);padding:20px 0}
+[hidden]{display:none!important}
+h2{font-size:12px;margin:8px 0 12px}
+.tform{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:8px}
+.tform label{display:flex;flex-direction:column;gap:6px;color:var(--muted);font-size:9px}
+.tform input{min-width:0;color-scheme:dark}
+.tform .acts{display:flex;gap:10px;align-items:end;flex-wrap:wrap}
+#tInfo{color:var(--ink);margin:6px 0 22px}
+.tabs{display:flex;gap:8px;margin-bottom:14px;border-bottom:3px solid var(--line)}
+.tab{background:transparent;color:var(--muted);box-shadow:none;border-bottom:3px solid transparent;margin-bottom:-3px}
+.tab[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+</style>
+</head>
+<body>
+<main>
+  <h1>Récords · Administrador</h1>
+  <p>Escribe la clave que configuraste como ADMIN_KEY en Netlify. Solo se guarda mientras esta pestaña esté abierta.</p>
+
+  <form class="login" id="login">
+    <input id="key" type="password" autocomplete="current-password" placeholder="Clave de administrador" aria-label="Clave de administrador" required>
+    <button type="submit">Entrar</button>
+  </form>
+
+  <div class="status" id="status" role="status"></div>
+
+  <section id="panel" hidden>
+    <h2>Torneo</h2>
+    <form class="tform" id="tform">
+      <label>Nombre<input id="tNombre" maxlength="60" placeholder="Torneo Día del Caminero" required></label>
+      <label>Inicio<input id="tIni" type="datetime-local" required></label>
+      <label>Fin<input id="tFin" type="datetime-local" required></label>
+      <div class="acts"><button type="submit">Guardar torneo</button><button class="ghost" type="button" id="tOff">Quitar torneo</button></div>
+    </form>
+    <p id="tInfo"></p>
+
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" data-list="torneo" aria-selected="true">Tabla del torneo</button>
+      <button class="tab" role="tab" data-list="general" aria-selected="false">Tabla general</button>
+    </div>
+    <div class="bar">
+      <span id="count"></span>
+      <div>
+        <button class="ghost" id="reload" type="button">Recargar</button>
+        <button class="del" id="wipe" type="button">Borrar todo</button>
+      </div>
+    </div>
+    <div class="wrap">
+      <table>
+        <thead><tr><th>#</th><th>Nombre</th><th>Tramos</th><th>Fecha</th><th class="num">Puntos</th><th></th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="empty" hidden>Esta tabla está vacía.</div>
+  </section>
+</main>
+<script>
+(()=>{
+const API='/api/scores';
+const $=id=>document.getElementById(id);
+let key='';try{key=sessionStorage.getItem('vise-admin-key')||'';}catch(e){}
+let data={scores:[],torneoScores:[],torneo:null},view='torneo';
+const EST={proximo:'Programado',activo:'En curso',terminado:'Terminado'};
+
+function status(t,err){const s=$('status');s.textContent=t;s.classList.toggle('err',!!err);}
+async function call(method,body){
+  const opt={method,headers:{'x-admin-key':key,'accept':'application/json'}};
+  if(body){opt.headers['content-type']='application/json';opt.body=JSON.stringify(body);}
+  const r=await fetch(method==='GET'?API+'?all=1':API,opt);
+  let d={};try{d=await r.json();}catch(e){}
+  if(!r.ok)throw new Error(d.error||('Error '+r.status));
+  return d;
+}
+const toLocal=iso=>{const d=new Date(iso);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16);};
+const fdate=iso=>new Date(iso).toLocaleString('es-MX',{dateStyle:'medium',timeStyle:'short'});
+function renderTorneo(){
+  const t=data.torneo;
+  if(t){$('tNombre').value=t.nombre;$('tIni').value=toLocal(t.inicio);$('tFin').value=toLocal(t.fin);
+    $('tInfo').textContent=EST[t.estado]+': '+fdate(t.inicio)+' → '+fdate(t.fin);$('tOff').disabled=false;}
+  else{$('tInfo').textContent='No hay torneo configurado. El juego solo muestra la tabla general.';$('tOff').disabled=true;}
+}
+function renderList(){
+  document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.list===view)));
+  const list=view==='torneo'?data.torneoScores:data.scores;
+  const tb=$('rows');tb.replaceChildren();
+  $('count').textContent=list.length+(list.length===1?' récord':' récords');
+  $('empty').hidden=list.length>0;$('wipe').disabled=!list.length;
+  list.forEach((e,i)=>{
+    const tr=document.createElement('tr');
+    [String(i+1),e.name,e.spans+'/6',new Date(e.ts).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'}),String(e.score)].forEach((c,j)=>{
+      const td=document.createElement('td');td.textContent=c;if(j===4)td.className='num';tr.appendChild(td);});
+    const td=document.createElement('td');const b=document.createElement('button');b.className='del';b.type='button';b.textContent='Borrar';
+    b.setAttribute('aria-label','Borrar récord de '+e.name);
+    b.onclick=async()=>{if(!confirm('¿Borrar el récord de '+e.name+' ('+e.score+' puntos)?'))return;
+      b.disabled=true;try{const d=await call('DELETE',{list:view,ts:e.ts});if(view==='torneo')data.torneoScores=d.scores;else data.scores=d.scores;renderList();status('Récord borrado.');}
+      catch(err){status(err.message,true);b.disabled=false;}};
+    td.appendChild(b);tr.appendChild(td);tb.appendChild(tr);
+  });
+}
+async function load(){
+  status('Cargando…');
+  try{data=await call('GET');renderTorneo();renderList();$('panel').hidden=false;$('login').hidden=true;status('');
+    try{sessionStorage.setItem('vise-admin-key',key);}catch(e){}}
+  catch(err){$('panel').hidden=true;$('login').hidden=false;status(err.message,true);try{sessionStorage.removeItem('vise-admin-key');}catch(e){}}
+}
+$('login').addEventListener('submit',e=>{e.preventDefault();key=$('key').value.trim();if(key)load();});
+$('reload').onclick=load;
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{view=b.dataset.list;renderList();});
+$('wipe').onclick=async()=>{
+  const nom=view==='torneo'?'la tabla del torneo':'la tabla general';
+  if(!confirm('¿Borrar TODOS los récords de '+nom+'? No se puede deshacer.'))return;
+  try{await call('DELETE',{list:view,all:true});if(view==='torneo')data.torneoScores=[];else data.scores=[];renderList();status('Tabla vaciada.');}catch(err){status(err.message,true);}
+};
+$('tform').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const ini=new Date($('tIni').value),fin=new Date($('tFin').value);
+  if(!(fin>ini)){status('El fin debe ser después del inicio.',true);return;}
+  try{const d=await call('PUT',{torneo:{nombre:$('tNombre').value.trim(),inicio:ini.toISOString(),fin:fin.toISOString()}});data.torneo=d.torneo;renderTorneo();status('Torneo guardado.');}
+  catch(err){status(err.message,true);}
+});
+$('tOff').onclick=async()=>{
+  if(!confirm('¿Quitar el torneo? La tabla del torneo no se borra, solo deja de mostrarse en el juego.'))return;
+  try{await call('PUT',{torneo:null});data.torneo=null;renderTorneo();status('Torneo quitado.');}catch(err){status(err.message,true);}
+};
+if(key)load();else $('key').focus();
+})();
+</script>
+</body>
+</html>
